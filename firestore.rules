@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow users to read/update their own profile
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Organization Scope
+    match /organizations/{orgId} {
+      allow read: if true; // Allow public read for menu etc.
+      
+      // Admin/Member access to subcollections
+      match /{allSubcollections=**} {
+        allow read, write: if request.auth != null && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId;
+      }
+      
+      // Public access for placing/tracking orders
+      match /orders/{orderId} {
+        allow create: if true;
+        allow read: if true;
+      }
+    }
+  }
+}

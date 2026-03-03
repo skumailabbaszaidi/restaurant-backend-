@@ -82,3 +82,40 @@ export const getOrders = async (req: Request, res: Response) => {
         return;
     }
 };
+
+export const updateOrderStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const organizationId = (req as any).user?.organizationId;
+
+        console.log(`[PATCH] /orders/${id}: Updating status to ${status} for orgId: ${organizationId}`);
+
+        if (!id || !status || !organizationId) {
+            return res.status(400).json({ error: 'Missing ID, status, or organization context' });
+        }
+
+        const orderRef = db.collection('organizations')
+            .doc(organizationId)
+            .collection('orders')
+            .doc(id as string);
+
+        const orderDoc = await orderRef.get();
+        if (!orderDoc.exists) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        await orderRef.update({ 
+            status,
+            updatedAt: new Date()
+        });
+
+        console.log(`[PATCH] /orders/${id}: Success`);
+        res.json({ success: true, id, status });
+        return;
+    } catch (error: any) {
+        console.error(`[PATCH] /orders/${req.params.id} ERROR:`, error.message);
+        res.status(500).json({ error: 'Failed to update order status', details: error.message });
+        return;
+    }
+};

@@ -11,8 +11,9 @@ import {
     getAdminOrders,
     createAdminItem,
     updateAdminItem,
-    deleteAdminItem
+    deleteAdminItem,
 } from '../controllers/adminController';
+import { updateOrderStatus } from '../controllers/orderController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -37,5 +38,6 @@ router.delete('/items/:id', deleteAdminItem);
 
 // Order Management
 router.get('/orders', getAdminOrders);
+router.patch('/orders/:id', updateOrderStatus);
 
 export default router;

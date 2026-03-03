@@ -284,7 +284,11 @@ export const createAdminItem = async (req: AuthRequest, res: Response) => {
             .doc(organizationId)
             .collection('items')
             .add({
-                ...itemData,
+                name: itemData.name,
+                price: itemData.price,
+                description: itemData.description,
+                categoryId: itemData.categoryId,
+                imageUrl: itemData.imageUrl || "",
                 organizationId, // Keep for backward compat/filtering
                 available: itemData.available ?? true,
                 createdAt: new Date()
@@ -316,8 +320,11 @@ export const updateAdminItem = async (req: AuthRequest, res: Response) => {
         await db.collection('organizations')
             .doc(organizationId)
             .collection('items')
-            .doc(id)
-            .update(updates);
+            .doc(id as string)
+            .update({
+                ...updates,
+                updatedAt: new Date()
+            });
 
         console.log(`[PATCH] /admin/items/${id}: Success`);
         res.json({ success: true });
