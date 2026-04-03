@@ -12,6 +12,8 @@ import {
     createAdminItem,
     updateAdminItem,
     deleteAdminItem,
+    getWaiterRequests,
+    updateWaiterRequest,
 } from '../controllers/adminController';
 import { updateOrderStatus } from '../controllers/orderController';
 import { authenticate } from '../middleware/auth';
@@ -39,5 +41,9 @@ router.delete('/items/:id', deleteAdminItem);
 // Order Management
 router.get('/orders', getAdminOrders);
 router.patch('/orders/:id', updateOrderStatus);
+
+// Waiter Request Management
+router.get('/waiter-requests', getWaiterRequests);
+router.patch('/waiter-requests/:id', updateWaiterRequest);
 
 export default router;

@@ -363,3 +363,57 @@ export const deleteAdminItem = async (req: AuthRequest, res: Response) => {
         return;
     }
 };
+
+// --- Admin Waiter Request Management ---
+
+export const getWaiterRequests = async (req: AuthRequest, res: Response) => {
+    try {
+        const organizationId = req.user?.organizationId;
+        console.log(`[GET] /admin/waiter-requests requested for orgId: ${organizationId}`);
+
+        if (!organizationId) {
+            res.status(400).json({ error: 'Missing organization context' });
+            return;
+        }
+
+        const snapshot = await db.collection('organizations')
+            .doc(organizationId)
+            .collection('waiterRequests')
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.json(requests);
+        return;
+    } catch (error: any) {
+        console.error(`[GET] /admin/waiter-requests ERROR:`, error.message);
+        res.status(500).json({ error: 'Failed to fetch waiter requests', details: error.message });
+        return;
+    }
+};
+
+export const updateWaiterRequest = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const organizationId = req.user?.organizationId;
+
+        if (!id || !status || !organizationId) {
+            res.status(400).json({ error: 'Missing ID, status, or organization context' });
+            return;
+        }
+
+        await db.collection('organizations')
+            .doc(organizationId)
+            .collection('waiterRequests')
+            .doc(id as string)
+            .update({ status, updatedAt: new Date() });
+
+        res.json({ success: true });
+        return;
+    } catch (error: any) {
+        console.error(`[PATCH] /admin/waiter-requests/${req.params.id} ERROR:`, error.message);
+        res.status(500).json({ error: 'Failed to update waiter request', details: error.message });
+        return;
+    }
+};
